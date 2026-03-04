@@ -4,8 +4,9 @@ import type { Product, ReservationResponse } from "../utils/types";
 
 export const useProducts = () => {
   return useQuery<Product[]>("products", fetchProducts, {
-    refetchInterval: 5000, // real-time stock
+    refetchInterval: 5000,
     retry: 2,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -17,6 +18,6 @@ export const useReserveProduct = () => {
     Error,
     { productId: string; quantity: number }
   >(({ productId, quantity }) => reserveProduct(productId, quantity), {
-    onSuccess: () => queryClient.invalidateQueries("products"), // refresh stock
+    onSuccess: () => queryClient.invalidateQueries("products"),
   });
 };

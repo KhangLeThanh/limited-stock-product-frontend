@@ -5,23 +5,23 @@ import * as Yup from "yup";
 import { useProducts, useReserveProduct } from "../hooks/useProduct";
 import CountdownTimer from "../components/CountdownTimer";
 import Notification from "../components/Notification";
+import CheckoutModal from "../components/CheckoutModal";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
-// Form validation schema
 const ReservationSchema = Yup.object().shape({
   productId: Yup.string().required("Product is required"),
-  quantity: Yup.number().min(1, "Minimum 1").required("Quantity is required"),
+  quantity: Yup.number().min(1).required("Quantity is required"),
 });
 
-// Define types for form values
 interface ReservationFormValues {
   productId: string;
   quantity: number;
 }
 
-// Active reservation type
 interface ActiveReservation {
   id: string;
+  productName: string;
+  quantity: number;
   expiresAt: string;
 }
 
@@ -36,6 +36,7 @@ const LimitedDrop: React.FC = () => {
     severity: "info" as "success" | "error" | "info",
     message: "",
   });
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -66,6 +67,8 @@ const LimitedDrop: React.FC = () => {
                   onSuccess: (data) => {
                     setActiveReservation({
                       id: data.reservationId,
+                      productName: product.name,
+                      quantity: values.quantity,
                       expiresAt: data.expiresAt,
                     });
                     setNotif({
@@ -73,6 +76,7 @@ const LimitedDrop: React.FC = () => {
                       severity: "success",
                       message: "Reservation successful!",
                     });
+                    setCheckoutOpen(true);
                   },
                   onError: (error: Error) => {
                     setNotif({
@@ -125,10 +129,21 @@ const LimitedDrop: React.FC = () => {
       ))}
 
       {activeReservation && (
-        <CountdownTimer
-          expiresAt={activeReservation.expiresAt}
-          onExpire={() => setActiveReservation(null)}
-        />
+        <>
+          <CountdownTimer
+            expiresAt={activeReservation.expiresAt}
+            onExpire={() => setActiveReservation(null)}
+          />
+
+          <CheckoutModal
+            open={checkoutOpen}
+            reservationId={activeReservation.id}
+            productName={activeReservation.productName}
+            quantity={activeReservation.quantity}
+            onClose={() => setCheckoutOpen(false)}
+            onSuccess={() => setActiveReservation(null)}
+          />
+        </>
       )}
 
       <Notification
