@@ -1,14 +1,15 @@
+import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import LimitedDrop from "./pages/LimitedDrop";
+import { LimitedDropPage } from "./pages/LimitedDropPage";
 
 const queryClient = new QueryClient();
 
-function App() {
+const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <LimitedDrop />
+      <LimitedDropPage />
     </QueryClientProvider>
   );
-}
+};
 
 export default App;

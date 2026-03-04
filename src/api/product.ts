@@ -1,5 +1,5 @@
 import baseApi from "./baseApi"; // <-- your renamed Axios
-import type { Product, ReservationResponse } from "../utils/types";
+import type { Product, Reservation } from "../utils/types";
 
 export const fetchProducts = async (): Promise<Product[]> => {
   const res = await baseApi.get("/products");
@@ -9,7 +9,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 export const reserveProduct = async (
   productId: string,
   quantity: number
-): Promise<ReservationResponse> => {
+): Promise<Reservation> => {
   const res = await baseApi.post("/reserve", { productId, quantity });
   return res.data;
 };

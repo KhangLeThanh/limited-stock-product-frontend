@@ -1,34 +1,16 @@
-// src/components/Notification.tsx
 import React from "react";
-import { Snackbar, Alert } from "@mui/material";
+import type { NotificationType } from "../utils/types";
 
-interface NotificationProps {
-  open: boolean;
-  severity: "success" | "error" | "info";
-  message: string;
+interface Props {
+  notification: NotificationType;
   onClose: () => void;
-  autoHideDuration?: number;
 }
 
-const Notification: React.FC<NotificationProps> = ({
-  open,
-  severity,
-  message,
-  onClose,
-  autoHideDuration = 3000,
-}) => {
+export const Notification: React.FC<Props> = ({ notification, onClose }) => {
   return (
-    <Snackbar
-      open={open}
-      autoHideDuration={autoHideDuration}
-      onClose={onClose}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
-    >
-      <Alert onClose={onClose} severity={severity} sx={{ width: "100%" }}>
-        {message}
-      </Alert>
-    </Snackbar>
+    <div className={`notification ${notification.type}`}>
+      <p>{notification.message}</p>
+      <button onClick={onClose}>X</button>
+    </div>
   );
 };
-
-export default Notification;

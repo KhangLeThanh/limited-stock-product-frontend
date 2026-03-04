@@ -1,33 +1,27 @@
-// src/components/CountdownTimer.tsx
-import React, { useEffect, useState } from "react";
-import { Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 
-interface CountdownTimerProps {
+interface Props {
   expiresAt: string;
-  onExpire: () => void;
+  onExpire?: () => void;
 }
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({
-  expiresAt,
-  onExpire,
-}) => {
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+export const CountdownTimer = ({ expiresAt, onExpire }: Props) => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    return diff > 0 ? diff : 0;
+  });
 
   useEffect(() => {
-    const targetTime = new Date(expiresAt).getTime();
-
-    const updateTime = () => {
-      const now = Date.now();
-      const diff = targetTime - now;
-      setTimeLeft(diff > 0 ? diff : 0);
-
+    const interval = setInterval(() => {
+      const diff = new Date(expiresAt).getTime() - Date.now();
       if (diff <= 0) {
-        onExpire();
+        setTimeLeft(0);
+        onExpire?.();
+        clearInterval(interval);
+      } else {
+        setTimeLeft(diff);
       }
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [expiresAt, onExpire]);
@@ -35,13 +29,9 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const minutes = Math.floor(timeLeft / 1000 / 60);
   const seconds = Math.floor((timeLeft / 1000) % 60);
 
-  if (timeLeft <= 0) return null;
-
   return (
-    <Typography variant="subtitle1" color="secondary" sx={{ mt: 2 }}>
-      Reservation expires in: {minutes}:{seconds.toString().padStart(2, "0")}
-    </Typography>
+    <span>
+      {minutes}:{seconds.toString().padStart(2, "0")}
+    </span>
   );
 };
-
-export default CountdownTimer;
