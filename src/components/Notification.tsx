@@ -1,3 +1,4 @@
+// src/components/Notification.tsx
 import React from "react";
 import { Snackbar, Alert } from "@mui/material";
 
@@ -6,6 +7,7 @@ interface NotificationProps {
   severity: "success" | "error" | "info";
   message: string;
   onClose: () => void;
+  autoHideDuration?: number;
 }
 
 const Notification: React.FC<NotificationProps> = ({
@@ -13,11 +15,12 @@ const Notification: React.FC<NotificationProps> = ({
   severity,
   message,
   onClose,
+  autoHideDuration = 3000,
 }) => {
   return (
     <Snackbar
       open={open}
-      autoHideDuration={4000}
+      autoHideDuration={autoHideDuration}
       onClose={onClose}
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >

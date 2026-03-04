@@ -1,37 +1,46 @@
+// src/components/CountdownTimer.tsx
 import React, { useEffect, useState } from "react";
+import { Typography } from "@mui/material";
 
-interface Props {
+interface CountdownTimerProps {
   expiresAt: string;
   onExpire: () => void;
 }
 
-const CountdownTimer: React.FC<Props> = ({ expiresAt, onExpire }) => {
-  const [timeLeft, setTimeLeft] = useState(
-    () => new Date(expiresAt).getTime() - Date.now()
-  );
+const CountdownTimer: React.FC<CountdownTimerProps> = ({
+  expiresAt,
+  onExpire,
+}) => {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const diff = new Date(expiresAt).getTime() - Date.now();
-      setTimeLeft(diff);
+    const targetTime = new Date(expiresAt).getTime();
+
+    const updateTime = () => {
+      const now = Date.now();
+      const diff = targetTime - now;
+      setTimeLeft(diff > 0 ? diff : 0);
+
       if (diff <= 0) {
-        clearInterval(interval);
         onExpire();
       }
-    }, 1000);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
 
     return () => clearInterval(interval);
   }, [expiresAt, onExpire]);
 
-  if (timeLeft <= 0) return <p>Reservation expired</p>;
-
   const minutes = Math.floor(timeLeft / 1000 / 60);
   const seconds = Math.floor((timeLeft / 1000) % 60);
 
+  if (timeLeft <= 0) return null;
+
   return (
-    <p>
-      Time left: {minutes}m {seconds}s
-    </p>
+    <Typography variant="subtitle1" color="secondary" sx={{ mt: 2 }}>
+      Reservation expires in: {minutes}:{seconds.toString().padStart(2, "0")}
+    </Typography>
   );
 };
 
