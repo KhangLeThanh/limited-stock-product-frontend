@@ -1,43 +1,90 @@
 import React, { useState } from "react";
-import { useProducts } from "../hooks/useProduct";
-import { useReservationManager } from "../hooks/useReservationManager";
-import { ProductCard } from "../components/ProductCard";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { fetchProducts, reserveProduct } from "../api/product";
+import ProductCard from "../components/ProductCard";
 import { CheckoutModal } from "../components/CheckoutModal";
+import { Notification } from "../components/Notification";
+import type { Product, Reservation, NotificationType } from "../utils/types";
+import { Grid, Typography, CircularProgress } from "@mui/material";
+import { currentUser } from "../utils/user";
 
 export const LimitedDropPage: React.FC = () => {
-  const { data: products, isLoading } = useProducts();
-  const { reservations, addReservation } = useReservationManager();
-  const [checkoutReservation, setCheckoutReservation] = useState<
-    null | (typeof reservations)[0]
-  >(null);
+  const queryClient = useQueryClient();
+  const [selectedReservation, setSelectedReservation] =
+    useState<Reservation | null>(null);
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
+  const [notification, setNotification] = useState<NotificationType | null>(
+    null
+  );
 
-  if (isLoading) return <p>Loading products...</p>;
+  // Fetch products
+  const { data: products = [], isLoading } = useQuery<Product[]>(
+    "products",
+    fetchProducts
+  );
+
+  // Reserve product mutation
+  const reserveMutation = useMutation(
+    ({ productId }: { productId: string }) =>
+      reserveProduct(productId, 1, currentUser.id),
+    {
+      onMutate: ({ productId }) => setLoadingProductId(productId),
+      onSuccess: (reservation) => {
+        setSelectedReservation(reservation);
+        setNotification({ type: "success", message: "Reserved successfully!" });
+        queryClient.invalidateQueries("products");
+      },
+      onError: () => {
+        setNotification({
+          type: "error",
+          message: "Failed to reserve product.",
+        });
+      },
+      onSettled: () => setLoadingProductId(null),
+    }
+  );
+
+  const handleReserve = (productId: string) => {
+    reserveMutation.mutate({ productId });
+  };
+
+  if (isLoading)
+    return (
+      <div style={{ textAlign: "center", marginTop: 50 }}>
+        <CircularProgress />
+        <Typography>Loading products...</Typography>
+      </div>
+    );
 
   return (
-    <div>
-      <h2>Limited Drop</h2>
-      <div className="products">
-        {products?.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            onReserveSuccess={addReservation}
-            disabled={reservations.some((r) => r.productId === p.id)}
-          />
+    <div style={{ padding: 20 }}>
+      <Typography variant="h4" gutterBottom>
+        Limited Drop
+      </Typography>
+
+      {notification && (
+        <Notification
+          notification={notification}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
+      <Grid container spacing={2}>
+        {products.map((product) => (
+          <Grid item key={product.id}>
+            <ProductCard
+              product={product}
+              onReserve={handleReserve}
+              loading={loadingProductId === product.id}
+            />
+          </Grid>
         ))}
-      </div>
+      </Grid>
 
-      {reservations.map((r) => (
-        <div key={r.id} onClick={() => setCheckoutReservation(r)}>
-          Reservation {r.id} expires at:{" "}
-          {new Date(r.expiresAt).toLocaleTimeString()}
-        </div>
-      ))}
-
-      {checkoutReservation && (
+      {selectedReservation && (
         <CheckoutModal
-          reservation={checkoutReservation}
-          onClose={() => setCheckoutReservation(null)}
+          reservation={selectedReservation}
+          onClose={() => setSelectedReservation(null)}
         />
       )}
     </div>

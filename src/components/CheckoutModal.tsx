@@ -1,6 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Reservation } from "../utils/types";
 import { useCheckout } from "../hooks/useCheckout";
+import { CountdownTimer } from "./CountdownTimer";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 
 interface Props {
   reservation: Reservation;
@@ -9,10 +19,13 @@ interface Props {
 
 export const CheckoutModal: React.FC<Props> = ({ reservation, onClose }) => {
   const checkout = useCheckout();
+  const [expired, setExpired] = useState(false);
 
   const handleCheckout = async () => {
+    if (expired) return;
+
     try {
-      await checkout.mutateAsync(reservation.id);
+      await checkout.mutateAsync(reservation.reservationId);
       alert("Order completed!");
       onClose();
     } catch (err) {
@@ -20,15 +33,41 @@ export const CheckoutModal: React.FC<Props> = ({ reservation, onClose }) => {
     }
   };
 
+  const handleExpire = () => {
+    setExpired(true);
+    alert("Reservation expired!");
+  };
+
   return (
-    <div className="modal">
-      <h3>Checkout {reservation.id}</h3>
-      <p>Quantity: {reservation.quantity}</p>
-      <p>Expires at: {new Date(reservation.expiresAt).toLocaleTimeString()}</p>
-      <button onClick={handleCheckout} disabled={checkout.isLoading}>
-        {checkout.isLoading ? "Processing..." : "Checkout"}
-      </button>
-      <button onClick={onClose}>Cancel</button>
-    </div>
+    <Dialog open onClose={onClose}>
+      <DialogTitle>Checkout Reservation</DialogTitle>
+      <DialogContent>
+        <Typography>Product ID: {reservation.productId}</Typography>
+        <Typography>Quantity: {reservation.quantity}</Typography>
+        <Typography>
+          Expires in:{" "}
+          <CountdownTimer
+            expiresAt={reservation.expiresAt}
+            onExpire={handleExpire}
+          />
+        </Typography>
+        {expired && (
+          <Typography color="error" mt={2}>
+            Reservation expired. You cannot checkout.
+          </Typography>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          onClick={handleCheckout}
+          disabled={checkout.isLoading || expired}
+          variant="contained"
+          startIcon={checkout.isLoading ? <CircularProgress size={20} /> : null}
+        >
+          Checkout
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };

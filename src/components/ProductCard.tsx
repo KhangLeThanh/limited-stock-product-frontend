@@ -1,46 +1,38 @@
-import React, { useState } from "react";
-import type { Product, Reservation } from "../utils/types";
-import { useReserveProduct } from "../hooks/useProduct";
+import type { Product } from "../utils/types";
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+} from "@mui/material";
 
-interface Props {
+type Props = {
   product: Product;
-  onReserveSuccess: (reservation: Reservation) => void;
-  disabled?: boolean;
-}
-
-export const ProductCard: React.FC<Props> = ({
-  product,
-  onReserveSuccess,
-  disabled,
-}) => {
-  const [loading, setLoading] = useState(false);
-  const reserve = useReserveProduct();
-
-  const handleReserve = async () => {
-    setLoading(true);
-    try {
-      const reservation = await reserve.mutateAsync({
-        productId: product.id,
-        quantity: 1,
-      });
-      onReserveSuccess(reservation);
-    } catch (err) {
-      alert((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="card">
-      <h3>{product.name}</h3>
-      <p>Stock: {product.stock}</p>
-      <button
-        onClick={handleReserve}
-        disabled={disabled || loading || product.stock <= 0}
-      >
-        {loading ? "Reserving..." : "Reserve"}
-      </button>
-    </div>
-  );
+  onReserve: (id: string) => void;
+  loading: boolean;
 };
+
+export default function ProductCard({ product, onReserve, loading }: Props) {
+  return (
+    <Card sx={{ width: 250, m: 1 }}>
+      <CardContent>
+        <Typography variant="h6">{product.name}</Typography>
+        <Typography>Stock: {product.stock}</Typography>
+        {product.stock === 0 && <Typography color="error">Sold Out</Typography>}
+      </CardContent>
+      {product.stock !== 0 && (
+        <CardActions>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            onClick={() => onReserve(product.id)}
+          >
+            {loading ? "Reserving..." : "Reserve"}
+          </Button>
+        </CardActions>
+      )}
+    </Card>
+  );
+}

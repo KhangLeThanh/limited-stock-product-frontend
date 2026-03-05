@@ -2,25 +2,18 @@ export interface Product {
   id: string;
   name: string;
   stock: number;
-  createdAt: string;
 }
 
 export interface Reservation {
-  id: string;
+  reservationId: string;
   productId: string;
+  userId: string;
   quantity: number;
   expiresAt: string;
-}
-
-export interface Order {
-  id: string;
-  productId: string;
-  quantity: number;
-  status: string;
+  status: "PENDING" | "COMPLETED" | "EXPIRED";
 }
 
 export interface NotificationType {
-  id: string;
-  message: string;
   type: "success" | "error";
+  message: string;
 }

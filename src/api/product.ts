@@ -8,8 +8,9 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
 export const reserveProduct = async (
   productId: string,
-  quantity: number
+  quantity: number,
+  userId: string
 ): Promise<Reservation> => {
-  const res = await baseApi.post("/reserve", { productId, quantity });
+  const res = await baseApi.post("/reserve", { productId, quantity, userId });
   return res.data;
 };
