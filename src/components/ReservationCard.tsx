@@ -1,53 +1,55 @@
+// src/components/ReservationCard.tsx
 import React, { useState } from "react";
-import type { Reservation } from "../utils/types";
+import type { Reservation, NotificationType } from "../utils/types";
 import { useCheckout } from "../hooks/useCheckout";
 import { CountdownTimer } from "./CountdownTimer";
-import {
-  Card,
-  Typography,
-  Button,
-  Box,
-  Divider,
-  CircularProgress,
-} from "@mui/material";
+import { Card, Typography, Button, Box, CircularProgress } from "@mui/material";
 
 interface Props {
   reservation: Reservation;
   onExpire?: () => void;
   onComplete?: () => void;
+  setNotification: (notification: NotificationType) => void; // Pass notification function from page
 }
 
 export const ReservationCard: React.FC<Props> = ({
   reservation,
   onExpire,
   onComplete,
+  setNotification,
 }) => {
   const checkout = useCheckout();
   const [expired, setExpired] = useState(false);
 
   const handleCheckout = async () => {
-    if (expired) return;
+    if (expired) {
+      setNotification({
+        type: "error",
+        message: "Reservation expired! Cannot checkout.",
+      });
+      return;
+    }
 
     try {
       await checkout.mutateAsync(reservation.id);
-      alert("Checkout successful!");
+      setNotification({ type: "success", message: "Checkout successful!" });
       onComplete?.();
     } catch (err) {
-      alert((err as Error).message);
+      setNotification({
+        type: "error",
+        message: (err as Error).message || "Checkout failed",
+      });
     }
   };
 
   const handleExpire = () => {
     setExpired(true);
     onExpire?.();
-    alert("Reservation expired!");
+    setNotification({ type: "error", message: "Reservation expired!" });
   };
 
   return (
     <Card sx={{ width: 300, p: 2, textAlign: "center", boxShadow: 3 }}>
-      <Typography variant="h6">Your Reservation</Typography>
-      <Divider sx={{ my: 1 }} />
-
       <Typography>
         <strong>Product:</strong>{" "}
         {reservation.product?.name || reservation.productId}
@@ -74,15 +76,19 @@ export const ReservationCard: React.FC<Props> = ({
           variant="contained"
           onClick={handleCheckout}
           disabled={checkout.isLoading || expired}
-          startIcon={checkout.isLoading ? <CircularProgress size={20} /> : null}
+          startIcon={
+            checkout.isLoading ? (
+              <CircularProgress size={20} sx={{ color: "white" }} />
+            ) : null
+          }
         >
-          Checkout
+          {!checkout.isLoading && "Checkout"}
         </Button>
 
         <Button
           variant="outlined"
           color="error"
-          onClick={onExpire}
+          onClick={handleExpire}
           disabled={checkout.isLoading}
         >
           Cancel

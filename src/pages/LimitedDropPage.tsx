@@ -6,14 +6,14 @@ import ProductCard from "../components/ProductCard";
 import { ReservationCard } from "../components/ReservationCard";
 import { Notification } from "../components/Notification";
 import type { Product, Reservation, NotificationType } from "../utils/types";
-import { Grid, Typography, CircularProgress } from "@mui/material";
+import { Grid, Typography, CircularProgress, Box } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 export const LimitedDropPage: React.FC = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedReservation, setSelectedReservation] =
-    useState<Reservation | null>(null);
+
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [notification, setNotification] = useState<NotificationType | null>(
     null
@@ -29,7 +29,7 @@ export const LimitedDropPage: React.FC = () => {
     {
       onMutate: ({ productId }) => setLoadingProductId(productId),
       onSuccess: (reservation) => {
-        setSelectedReservation(reservation);
+        setReservations((prev) => [...prev, reservation]);
         setNotification({ type: "success", message: "Reserved successfully!" });
         queryClient.invalidateQueries("products");
       },
@@ -51,16 +51,35 @@ export const LimitedDropPage: React.FC = () => {
     reserveMutation.mutate({ productId });
   };
 
+  const handleCompleteReservation = (reservationId: string) => {
+    setReservations((prev) => prev.filter((r) => r.id !== reservationId));
+    queryClient.invalidateQueries("products");
+    setNotification({ type: "success", message: "Checkout successful!" });
+  };
+
+  const handleExpireReservation = (reservationId: string) => {
+    setReservations((prev) => prev.filter((r) => r.id !== reservationId));
+    queryClient.invalidateQueries("products");
+    setNotification({ type: "error", message: "Reservation expired!" });
+  };
+
   if (isLoading)
     return (
-      <div style={{ textAlign: "center", marginTop: 50 }}>
+      <Box sx={{ textAlign: "center", mt: 10 }}>
         <CircularProgress />
         <Typography>Loading products...</Typography>
-      </div>
+      </Box>
     );
 
   return (
-    <div style={{ padding: 20 }}>
+    <Box
+      sx={{
+        p: 4,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <Typography variant="h4" gutterBottom>
         Limited Drop
       </Typography>
@@ -72,7 +91,8 @@ export const LimitedDropPage: React.FC = () => {
         />
       )}
 
-      <Grid container spacing={2}>
+      {/* Product List */}
+      <Grid container spacing={2} justifyContent="center">
         {products.map((product) => (
           <Grid item key={product.id}>
             <ProductCard
@@ -84,13 +104,26 @@ export const LimitedDropPage: React.FC = () => {
         ))}
       </Grid>
 
-      {selectedReservation && (
-        <ReservationCard
-          reservation={selectedReservation}
-          onComplete={() => setSelectedReservation(null)}
-          onExpire={() => setSelectedReservation(null)}
-        />
+      {/* Reserved Items */}
+      {reservations.length > 0 && (
+        <Box sx={{ mt: 4, width: "100%", maxWidth: 400 }}>
+          <Typography variant="h5" gutterBottom>
+            Your Reservations
+          </Typography>
+          <Grid container spacing={2}>
+            {reservations.map((reservation) => (
+              <Grid item key={reservation.id} xs={12}>
+                <ReservationCard
+                  reservation={reservation}
+                  onComplete={() => handleCompleteReservation(reservation.id)}
+                  onExpire={() => handleExpireReservation(reservation.id)}
+                  setNotification={setNotification}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };

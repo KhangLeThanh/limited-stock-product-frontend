@@ -14,7 +14,7 @@ export const Notification: React.FC<Props> = ({ notification, onClose }) => {
   return (
     <Snackbar
       open={true}
-      autoHideDuration={4000} // auto close after 4 seconds
+      autoHideDuration={4000}
       onClose={onClose}
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >
