@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { fetchProducts, reserveProduct } from "../api/product";
 import ProductCard from "../components/ProductCard";
-import { CheckoutModal } from "../components/CheckoutModal";
+import { ReservationCard } from "../components/ReservationCard";
 import { Notification } from "../components/Notification";
 import type { Product, Reservation, NotificationType } from "../utils/types";
 import { Grid, Typography, CircularProgress } from "@mui/material";
@@ -85,9 +85,10 @@ export const LimitedDropPage: React.FC = () => {
       </Grid>
 
       {selectedReservation && (
-        <CheckoutModal
+        <ReservationCard
           reservation={selectedReservation}
-          onClose={() => setSelectedReservation(null)}
+          onComplete={() => setSelectedReservation(null)}
+          onExpire={() => setSelectedReservation(null)}
         />
       )}
     </div>
