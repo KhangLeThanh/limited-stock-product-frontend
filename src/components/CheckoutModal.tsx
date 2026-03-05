@@ -20,12 +20,12 @@ interface Props {
 export const CheckoutModal: React.FC<Props> = ({ reservation, onClose }) => {
   const checkout = useCheckout();
   const [expired, setExpired] = useState(false);
-
+  console.log("test reservation", reservation);
   const handleCheckout = async () => {
     if (expired) return;
 
     try {
-      await checkout.mutateAsync(reservation.reservationId);
+      await checkout.mutateAsync(reservation.id);
       alert("Order completed!");
       onClose();
     } catch (err) {

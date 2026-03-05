@@ -1,4 +1,4 @@
-import baseApi from "./baseApi"; // <-- your renamed Axios
+import baseApi from "./baseApi";
 import type { Product, Reservation } from "../utils/types";
 
 export const fetchProducts = async (): Promise<Product[]> => {

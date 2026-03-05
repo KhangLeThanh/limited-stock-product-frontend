@@ -5,7 +5,7 @@ export interface Product {
 }
 
 export interface Reservation {
-  reservationId: string;
+  id: string;
   productId: string;
   userId: string;
   quantity: number;
