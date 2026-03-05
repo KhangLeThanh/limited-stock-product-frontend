@@ -15,7 +15,7 @@ type Props = {
 
 export default function ProductCard({ product, onReserve, loading }: Props) {
   return (
-    <Card sx={{ width: 250, m: 1 }}>
+    <Card sx={{ width: 250, m: 1, p: 4 }}>
       <CardContent>
         <Typography variant="h6">{product.name}</Typography>
         <Typography>Stock: {product.stock}</Typography>
