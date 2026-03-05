@@ -1,3 +1,4 @@
+// src/pages/LimitedDropPage.tsx
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { fetchProducts, reserveProduct } from "../api/product";
@@ -6,9 +7,10 @@ import { CheckoutModal } from "../components/CheckoutModal";
 import { Notification } from "../components/Notification";
 import type { Product, Reservation, NotificationType } from "../utils/types";
 import { Grid, Typography, CircularProgress } from "@mui/material";
-import { currentUser } from "../utils/user";
+import { useAuth } from "../context/AuthContext";
 
 export const LimitedDropPage: React.FC = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedReservation, setSelectedReservation] =
     useState<Reservation | null>(null);
@@ -17,16 +19,13 @@ export const LimitedDropPage: React.FC = () => {
     null
   );
 
-  // Fetch products
   const { data: products = [], isLoading } = useQuery<Product[]>(
     "products",
     fetchProducts
   );
 
-  // Reserve product mutation
   const reserveMutation = useMutation(
-    ({ productId }: { productId: string }) =>
-      reserveProduct(productId, 1, currentUser.id),
+    ({ productId }: { productId: string }) => reserveProduct(productId, 1),
     {
       onMutate: ({ productId }) => setLoadingProductId(productId),
       onSuccess: (reservation) => {
@@ -45,6 +44,10 @@ export const LimitedDropPage: React.FC = () => {
   );
 
   const handleReserve = (productId: string) => {
+    if (!user) {
+      setNotification({ type: "error", message: "Please login first" });
+      return;
+    }
     reserveMutation.mutate({ productId });
   };
 
