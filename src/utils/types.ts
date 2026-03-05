@@ -11,6 +11,7 @@ export interface Reservation {
   quantity: number;
   expiresAt: string;
   status: "PENDING" | "COMPLETED" | "EXPIRED";
+  product: Product;
 }
 
 export interface NotificationType {

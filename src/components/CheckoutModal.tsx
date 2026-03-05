@@ -20,7 +20,6 @@ interface Props {
 export const CheckoutModal: React.FC<Props> = ({ reservation, onClose }) => {
   const checkout = useCheckout();
   const [expired, setExpired] = useState(false);
-  console.log("test reservation", reservation);
   const handleCheckout = async () => {
     if (expired) return;
 
@@ -42,7 +41,7 @@ export const CheckoutModal: React.FC<Props> = ({ reservation, onClose }) => {
     <Dialog open onClose={onClose}>
       <DialogTitle>Checkout Reservation</DialogTitle>
       <DialogContent>
-        <Typography>Product ID: {reservation.productId}</Typography>
+        <Typography>Product Name: {reservation.product.name}</Typography>
         <Typography>Quantity: {reservation.quantity}</Typography>
         <Typography>
           Expires in:{" "}
